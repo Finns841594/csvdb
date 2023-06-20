@@ -8,6 +8,22 @@ const keyColumn = 'Origin URL';
 const file1 = 'Room Details List-Grid view.csv'
 const file2 = 'Captured Texts-Grid view.csv'
 
+const generateReport = (data1: any[], data2: any[], keyColumn: string, joinedData: any[]): string => {
+  let result = 
+  `
+  Total number of rows in ${file1}: ${data1.length} \n 
+  Total number of rows in ${file2}: ${data2.length} \n
+  Joined by key column: ${keyColumn} \n
+  Total number of rows in joined data: ${joinedData.length} \n
+  Total number of headers in ${file1}: ${Object.keys(data1[0]).length} \n
+  Total number of headers in ${file2}: ${Object.keys(data2[0]).length} \n
+  Total number of headers in joined data: ${Object.keys(joinedData[0]).length} \n
+  Headers that not in ${file1}: \n ${Object.keys(joinedData[0]).filter((header) => !Object.keys(data1[0]).includes(header)).map(item => item + `\n`).join(' ')} \n`;
+
+  return result
+}
+
+
 fs.createReadStream(file1)
   .pipe(fastcsv.parse({ headers: true }))
   .on('data', (row) => {
@@ -15,25 +31,25 @@ fs.createReadStream(file1)
   })
   .on('end', () => {
     // Parsing second CSV file after the first has completed
-    console.log('data1 length', data1.length, '\n ⭐️⭐️⭐️ data1 headers', '\n' , Object.keys(data1[0]), );
+    // console.log('data1 length', data1.length, '\n ⭐️⭐️⭐️ data1 headers', '\n' , Object.keys(data1[0]), );
     fs.createReadStream(file2)
         .pipe(fastcsv.parse({ headers: true }))
         .on('data', (row) => {
             data2.push(row);
         })
         .on('end', () => {
-          console.log('data2️⃣ length', data2.length, '\n ⭐️⭐️⭐️ data2️⃣ headers', '\n' , Object.keys(data2[0]), );
+          // console.log('data2️⃣ length', data2.length, '\n ⭐️⭐️⭐️ data2️⃣ headers', '\n' , Object.keys(data2[0]), );
           // Join the data based on the key column
           let joinedData = joinData(data1, data2, keyColumn);
-          console.log('⭐️Results', '\n', '\n joined data headers', Object.keys(joinedData[0]),);
+          console.log(generateReport(data1, data2, keyColumn, joinedData));
           // Write the results to a new CSV file
           // fastcsv.write(joinedData, { headers: true }).pipe(fs.createWriteStream('output.csv'));
         });
 });
 
+// data1 should be the larger dataset
 function joinData(data1: any[], data2: any[], keyColumn: string) {
   let result: any[] = [];
-  // console.log('data1', '\n', data1);
 
     // Loop through the first dataset
     data1.forEach(row1 => {
@@ -53,3 +69,4 @@ function joinData(data1: any[], data2: any[], keyColumn: string) {
 
     return result;
   }
+
