@@ -10,16 +10,20 @@ const file2 = 'Captured Texts-Grid view.csv'
 const outputFileName = 'output.csv'
 
 const generateReport = (data1: any[], data2: any[], keyColumn: string, joinedData: any[]): string => {
-  let result = 
+  const result = 
   `
-  Total number of rows in ${file1}: ${data1.length} \n 
-  Total number of rows in ${file2}: ${data2.length} \n
-  Joined by key column: ${keyColumn} \n
-  Total number of rows in joined data: ${joinedData.length} \n
-  Total number of headers in ${file1}: ${Object.keys(data1[0]).length} \n
-  Total number of headers in ${file2}: ${Object.keys(data2[0]).length} \n
-  Total number of headers in joined data: ${Object.keys(joinedData[0]).length} \n
-  Headers that not in ${file1}: \n ${Object.keys(joinedData[0]).filter((header) => !Object.keys(data1[0]).includes(header)).map(item => item + `\n`).join(' ')} \n`;
+  ------------------------------------- 
+  Total number of rows in ${file1}: ${data1.length} 
+  Total number of rows in ${file2}: ${data2.length} 
+  Joined by key column: ${keyColumn} 
+  Total number of rows in joined data: ${joinedData.length} 
+  ------------------------------------- 
+  Total number of headers in ${file1}: ${Object.keys(data1[0]).length} 
+  Total number of headers in ${file2}: ${Object.keys(data2[0]).length} 
+  Total number of headers in joined data: ${Object.keys(joinedData[0]).length} 
+  ------------------------------------- 
+  Headers that not in ${file1}: \n    ${Object.keys(joinedData[0]).filter((header) => !Object.keys(data1[0]).includes(header)).map(item => item + `\n`).join('    ')}
+  ------------------------------------- \n`;
 
   return result
 }
