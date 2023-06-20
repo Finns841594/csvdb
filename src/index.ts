@@ -7,6 +7,7 @@ let data2: any[] = [];
 const keyColumn = 'Origin URL';
 const file1 = 'Room Details List-Grid view.csv'
 const file2 = 'Captured Texts-Grid view.csv'
+const outputFileName = 'output.csv'
 
 const generateReport = (data1: any[], data2: any[], keyColumn: string, joinedData: any[]): string => {
   let result = 
@@ -43,7 +44,7 @@ fs.createReadStream(file1)
           let joinedData = joinData(data1, data2, keyColumn);
           console.log(generateReport(data1, data2, keyColumn, joinedData));
           // Write the results to a new CSV file
-          // fastcsv.write(joinedData, { headers: true }).pipe(fs.createWriteStream('output.csv'));
+          fastcsv.write(joinedData, { headers: true }).pipe(fs.createWriteStream(outputFileName));
         });
 });
 
