@@ -1,13 +1,16 @@
 import * as fs from 'fs';
 import * as fastcsv from 'fast-csv';
 import * as natural from 'natural';
+import { v4 as uuidv4 } from 'uuid';
 
 let data1: any[] = [];
 let data2: any[] = [];
+let dataForUUID: any[] = [];
 
 const keyColumn = 'Origin URL';
 const file1 = 'Room Details List-Grid view.csv'
 const file2 = 'Captured Texts-Grid view.csv'
+const fileForUUID = 'Captured Texts-Grid view.csv'
 const outputFileName = 'output.csv'
 
 // data1 should be the larger dataset
@@ -78,8 +81,22 @@ const joinTwoTablesByKeyColumn = (data1:any[], data2:any[], keyColumn:string) =>
 }
 
 
+// let str1 = "Radisson Hotel, Stockholm";
+// let str2 = "Radisson Hotel, Malmö";
 
-  let str1 = "Radisson Hotel, Stockholm";
-  let str2 = "Radisson Hotel, Malmö";
-  
-  console.log(natural.JaroWinklerDistance(str1, str2, {ignoreCase: true}));
+// console.log(natural.JaroWinklerDistance(str1, str2, {ignoreCase: true}));
+
+const generateUUID = (fileForUUID:string, dataForUUID:any[]) => {
+  fs.createReadStream(fileForUUID)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (row) => {
+      const uuid = uuidv4();
+      row['UUID'] = uuid;
+      dataForUUID.push(row);
+    })
+    .on('end', () => {
+      fastcsv.write(dataForUUID, { headers: true }).pipe(fs.createWriteStream(fileForUUID.replace('.csv', ' with uuid.csv')));
+    })
+}
+
+// generateUUID(fileForUUID, dataForUUID);
