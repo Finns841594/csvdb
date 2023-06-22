@@ -89,13 +89,18 @@ export const generateUUID = (fileForUUID:string, dataForUUID:any[]) => {
     })
 }
 
-export const getCityNameFromTwoColumn = (rawDatafile:string, refCityName:string[]) => {
+export const getCityNameFromTwoColumn = (rawDatafile:string, refCityName:string[], leftColumnName:string, rightColumnName:string) => {
   const result = [] as any[];
   fs.createReadStream(rawDatafile)
     .pipe(fastcsv.parse({ headers: true }))
     .on('data', (row) => {
-      if (refCityName.includes(row['city_name_raw'])) {
-        row['city_from_roomlist'] = row['city_name_raw'];
+      const cityFromRight = refCityName.filter(cityName => row[rightColumnName].match(cityName));
+      const cityFromLeft = refCityName.filter(cityName => row[leftColumnName].match(cityName));
+      if (cityFromRight.length) {
+        row['city_from_roomlist'] = cityFromRight[0];
+        result.push(row);
+      } else if (cityFromLeft.length) {
+        row['city_from_roomlist'] = cityFromLeft[0];
         result.push(row);
       } else {
         result.push(row);
@@ -128,4 +133,83 @@ export const getMinMaxNumberOfPeople = (rawDatafile:string) => {
     .on('end', () => {
       fastcsv.write(result, { headers: true }).pipe(fs.createWriteStream(rawDatafile.replace('.csv', ' with min-max number of people.csv')));
     })
+}
+
+export const getCityNamesFromOneColumn = (rawDatafileName:string) => {
+  const listOfCityName = [] as string[];
+  fs.createReadStream(rawDatafileName)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (row) => {
+      if (row['city'] && !listOfCityName.includes(row['city'])) {
+        listOfCityName.push(row['city']);
+      } 
+    })
+    .on('end', () => {
+      fs.createWriteStream('listOfCityName.txt').write(listOfCityName.join('","'));
+    })
+}
+
+// clean price with structure like this: "kr2500/day"
+export const cleanPrice = (rawDatafile:string) => {
+  const result = [] as any[];
+
+  fs.createReadStream(rawDatafile)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (row) => {
+      if (row['price_raw']) {
+        row['price_per_day'] = row['price_raw'].replace(/[^0-9]/g, '');
+        result.push(row);
+      } else {
+        result.push(row);
+      }
+    })
+    .on('end', () => {
+      fastcsv.write(result, { headers: true }).pipe((fs.createWriteStream(rawDatafile.replace('.csv', ' with clean price.csv'))))
+    });
+}
+
+// clean price with structure like this: "6190,00 kr"
+export const cleanPrice2 = (rawDatafile:string) => {
+  const result = [] as any[];
+
+  fs.createReadStream(rawDatafile)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (row) => {
+      if (row['price_raw']) {
+        const match = row['price_raw'].replace(/\s/g, '').split(',')[0];
+        if (match) {
+          row['price_per_day'] = parseInt(match)
+        } 
+        result.push(row);
+      } else {
+        result.push(row);
+      }
+    })
+    .on('end', () => {
+      fastcsv.write(result, { headers: true }).pipe((fs.createWriteStream(rawDatafile.replace('.csv', ' with clean price.csv'))))
+    });
+}
+
+export const getHotelNameAndCityNameFromOneColumn = (rawDatafile:string) => {
+  const result = [] as any[];
+
+  fs.createReadStream(rawDatafile)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (row) => {
+      if (row['hotel_name_from_roomlist_raw']) {
+        const parts = row['hotel_name_from_roomlist_raw'].split(/[/|]/)
+        if (parts.length > 1) {
+          row['hotel_name_from_roomlist'] = parts[0].trim();
+          row['room_name'] = parts[1].trim();
+        } else {
+          row['hotel_name_from_roomlist'] = parts[0].trim();
+        }
+        result.push(row);
+      } else {
+        result.push(row);
+      }
+    })
+    .on('end', () => {
+      fastcsv.write(result, { headers: true }).pipe((fs.createWriteStream(rawDatafile.replace('.csv', ' with city name and hotel name.csv'))))
+    });
 }
