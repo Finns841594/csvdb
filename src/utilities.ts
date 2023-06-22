@@ -76,7 +76,8 @@ export const joinTwoTablesByKeyColumn = (data1:any[], data2:any[], file1:any, fi
 
 // console.log(natural.JaroWinklerDistance(str1, str2, {ignoreCase: true}));
 
-export const generateUUID = (fileForUUID:string, dataForUUID:any[]) => {
+export const generateUUID = (fileForUUID:string) => {
+  const dataForUUID = [] as any[];
   fs.createReadStream(fileForUUID)
     .pipe(fastcsv.parse({ headers: true }))
     .on('data', (row) => {
@@ -212,4 +213,39 @@ export const getHotelNameAndCityNameFromOneColumn = (rawDatafile:string) => {
     .on('end', () => {
       fastcsv.write(result, { headers: true }).pipe((fs.createWriteStream(rawDatafile.replace('.csv', ' with city name and hotel name.csv'))))
     });
+}
+
+export const roomFindPlaces = (roomsFileName:string, placeFileName:string) => {
+  const result = [] as any[];
+  const placeStrings = [] as any[];
+
+  fs.createReadStream(placeFileName)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (place) => {
+      const placeString = place['title'] + ' ' + place['city'] + ' ' + place['address'];
+      placeStrings.push({UUID:place.UUID, placeString, place});
+    })
+    .on('end', () => {
+      const compareResult = [] as any;
+      fs.createReadStream(roomsFileName)
+      .pipe(fastcsv.parse({ headers: true }))
+      .on('data', (row) => {
+        const roomString = row['hotel_name_from_roomlist'] + ' ' + row['city_from_roomlist'] + ' ' + row['address_from_roomlist'];
+        placeStrings.forEach(placeString => {
+          // comparison algorithem is to be modified !!!!!!
+          const distance = natural.JaroWinklerDistance(roomString, placeString.placeString, {ignoreCase: true});
+          compareResult.push({UUID:placeString.UUID, distance})
+        })
+        const maxDistance = Math.max(...compareResult.map((item:any) => item.distance));
+        const placeUUID = compareResult.filter((item:any) => item.distance === maxDistance)[0].UUID;
+        row['placeUUID'] = placeUUID;
+        row['distance'] = maxDistance;
+        row['placeName'] = placeStrings.filter(item => item.UUID === placeUUID)[0].place.title;
+        result.push(row);
+      })
+      .on('end', () => {
+        fastcsv.write(result, { headers: true }).pipe(fs.createWriteStream(roomsFileName.replace('.csv', ' with placeUUID.csv')))
+      })
+    })
+
 }
