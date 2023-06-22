@@ -89,14 +89,43 @@ export const generateUUID = (fileForUUID:string, dataForUUID:any[]) => {
     })
 }
 
-export const getCityNameFromTwoColumn = (rawDatafile:any, refCityName:string[]) => {
-  const result = [];
+export const getCityNameFromTwoColumn = (rawDatafile:string, refCityName:string[]) => {
+  const result = [] as any[];
   fs.createReadStream(rawDatafile)
     .pipe(fastcsv.parse({ headers: true }))
     .on('data', (row) => {
       if (refCityName.includes(row['city_name_raw'])) {
         row['city_from_roomlist'] = row['city_name_raw'];
-        result.push(row['City Name']);
+        result.push(row);
+      } else {
+        result.push(row);
       }
+    })
+    .on('end', () => {
+      fastcsv.write(result, { headers: true }).pipe(fs.createWriteStream(rawDatafile.replace('.csv', ' with cityname.csv')));
+    })
+}
+
+export const getMinMaxNumberOfPeople = (rawDatafile:string) => {
+  const result = [] as any[];
+  fs.createReadStream(rawDatafile)
+    .pipe(fastcsv.parse({ headers: true }))
+    .on('data', (row) => {
+      if (row['number_of_people_raw']) {
+        const numberList = row['number_of_people_raw'].split(',').map(Number)
+        if (numberList.length > 1) {
+          row['number_of_people_min'] = Math.min(...numberList);
+          row['number_of_people_max'] = Math.max(...numberList);
+        } else {
+          row['number_of_people_min'] = numberList[0];
+          row['number_of_people_max'] = numberList[0];
+        }
+        result.push(row);
+      } else {
+        result.push(row);
+      }
+    })
+    .on('end', () => {
+      fastcsv.write(result, { headers: true }).pipe(fs.createWriteStream(rawDatafile.replace('.csv', ' with min-max number of people.csv')));
     })
 }
