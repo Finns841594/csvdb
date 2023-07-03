@@ -10,16 +10,16 @@ let data2: any[] = [];
 let dataForUUID: any[] = [];
 
 const keyColumn = 'Origin URL';
-const file1 = 'Room Details List-Grid view.csv'
-const file2 = 'Captured Texts-Grid view.csv'
-const fileForUUID = 'AllPlaces Sweden.csv'
-const outputFileName = 'output.csv'
-const rawDatafile1 = 'AllRooms - meetingsbooker raw.csv'
-const rawDatafile2 = 'AllRooms - timetomeet raw.csv'
-const rawDatafile3 = 'AllRooms - venuu raw.csv'
+const file1 = 'processing_files/Room Details List-Grid view.csv'
+const file2 = 'processing_files/Captured Texts-Grid view.csv'
+const fileForUUID = 'processing_files/AllPlaces Sweden.csv'
+const outputFileName = 'processing_files/output.csv'
+const rawDatafile1 = 'processing_files/AllRooms - meetingsbooker raw.csv'
+const rawDatafile2 = 'processing_files/AllRooms - timetomeet raw.csv'
+const rawDatafile3 = 'processing_files/AllRooms - venuu raw.csv'
 
-const allrooms = 'AllRooms - venuu.csv'
-const allplaces = 'AllPlaces Sweden with uuid.csv'
+const allrooms = 'processing_files/AllRooms - venuu.csv'
+const allplaces = 'processing_files/AllPlaces Sweden with uuid.csv'
 
 // getCityNamesFromOneColumn('dataset_crawler-google-places_2023-06-21_14-04-26-348-sweden.csv')
 
