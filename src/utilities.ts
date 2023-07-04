@@ -90,18 +90,22 @@ export const generateUUID = (fileForUUID:string) => {
     })
 }
 
-export const getCityNameFromTwoColumn = (rawDatafile:string, refCityName:string[], leftColumnName:string, rightColumnName:string) => {
+export const getCityNameFromTwoColumn = (rawDatafile:string, refCityName:string[], supplementCityList:string[], leftColumnName:string, rightColumnName:string) => {
   const result = [] as any[];
   fs.createReadStream(rawDatafile)
     .pipe(fastcsv.parse({ headers: true }))
     .on('data', (row) => {
       const cityFromRight = refCityName.filter(cityName => row[rightColumnName].match(cityName));
       const cityFromLeft = refCityName.filter(cityName => row[leftColumnName].match(cityName));
+      const cityFromRight2 = supplementCityList.filter(cityName => row[rightColumnName].match(cityName));
       if (cityFromRight.length) {
         row['city_from_roomlist'] = cityFromRight[0];
         result.push(row);
       } else if (cityFromLeft.length) {
         row['city_from_roomlist'] = cityFromLeft[0];
+        result.push(row);
+      } else if (cityFromRight2.length) {
+        row['city_from_roomlist'] = cityFromRight2[0];
         result.push(row);
       } else {
         result.push(row);
@@ -217,34 +221,40 @@ export const getHotelNameAndCityNameFromOneColumn = (rawDatafile:string) => {
 
 export const roomFindPlaces = (roomsFileName:string, placeFileName:string) => {
   const result = [] as any[];
-  const placeStrings = [] as any[];
+  const placeItems = [] as any[];
+  const workingLog = [] as any[];
 
   fs.createReadStream(placeFileName)
     .pipe(fastcsv.parse({ headers: true }))
     .on('data', (place) => {
-      const placeString = place['title'] + ' ' + place['city'] + ' ' + place['address'];
-      placeStrings.push({UUID:place.UUID, placeString, place});
+      const placeString = place['title'] + ', ' + place['address'];
+      placeItems.push({UUID:place.UUID, placeString, place});
     })
     .on('end', () => {
       const compareResult = [] as any;
       fs.createReadStream(roomsFileName)
       .pipe(fastcsv.parse({ headers: true }))
       .on('data', (row) => {
-        const roomString = row['hotel_name_from_roomlist'] + ' ' + row['city_from_roomlist'] + ' ' + row['address_from_roomlist'];
-        placeStrings.forEach(placeString => {
+        const roomString = row['hotel_name_from_roomlist'] + ', ' + row['address_from_roomlist'];
+        placeItems.forEach(placeItem => {
           // comparison algorithem is to be modified !!!!!!
-          const distance = natural.JaroWinklerDistance(roomString, placeString.placeString, {ignoreCase: true});
-          compareResult.push({UUID:placeString.UUID, distance})
+          const distance = natural.JaroWinklerDistance(roomString, placeItem.placeString, {ignoreCase: true});
+          compareResult.push({UUID:placeItem.UUID, distance})
+          workingLog.push({roomString, placeString: placeItem.placeString, distance})
         })
+        // console.log('compareResult for ' + roomString, compareResult)
         const maxDistance = Math.max(...compareResult.map((item:any) => item.distance));
+        console.log('maxDistance', maxDistance)
         const placeUUID = compareResult.filter((item:any) => item.distance === maxDistance)[0].UUID;
         row['placeUUID'] = placeUUID;
         row['distance'] = maxDistance;
-        row['placeName'] = placeStrings.filter(item => item.UUID === placeUUID)[0].place.title;
+        row['placeName'] = placeItems.filter(item => item.UUID === placeUUID)[0].place.title;
         result.push(row);
       })
       .on('end', () => {
         fastcsv.write(result, { headers: true }).pipe(fs.createWriteStream(roomsFileName.replace('.csv', ' with placeUUID.csv')))
+        fastcsv.write(workingLog, { headers: true }).pipe(fs.createWriteStream(roomsFileName.replace('.csv', ' working log.csv')))
+        console.log(`Done! Please check: ${roomsFileName.replace('.csv', ' with placeUUID.csv')}`)
       })
     })
 
