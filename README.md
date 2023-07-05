@@ -24,6 +24,8 @@ The following functionality is used:
 - roomFindPlaces - compared extracted data to a list of known variables from another source, using Jaro Winkler Distance to allow for inexact matching. Due to the limited list of known variables entered, this function was not used in a final project.
 - 
 
+## The Team
+
 This code was created as part of team consulting work. The project team was:
 -[Feng Yang](https://github.com/Finns841594)
 -[Chris O'Brien](https://github.com/chrisobrien88)
