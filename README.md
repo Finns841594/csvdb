@@ -22,14 +22,14 @@ The following functionality is used:
 - cleanPrice - formats different pricing types to ensure the aggregate table has a common pricing structure.
 - getHotelNameAndCityNameFromOneColumn - splits information from and address to extract place name and city.
 - roomFindPlaces - compared extracted data to a list of known variables from another source, using Jaro Winkler Distance to allow for inexact matching. Due to the limited list of known variables entered, this function was not used in a final project.
-- 
+
 
 ## The Team
 
 This code was created as part of team consulting work. The project team was:
--[Feng Yang](https://github.com/Finns841594)
--[Chris O'Brien](https://github.com/chrisobrien88)
-.[Stephen Moore](https://github.com/SMooreSwe)
+- [Feng Yang](https://github.com/Finns841594)
+- [Chris O'Brien](https://github.com/chrisobrien88)
+- [Stephen Moore](https://github.com/SMooreSwe)
 
 ## License
 
